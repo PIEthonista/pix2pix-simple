@@ -18,7 +18,7 @@ def is_image_file(filename):
 
 def load_img(filepath):
     img = Image.open(filepath).convert('RGB')
-    img = img.resize((256, 256), Image.BICUBIC)
+    # img = img.resize((256, 256), Image.BICUBIC)
     return img
 
 
@@ -32,30 +32,31 @@ def save_img(image_tensor, filename):
     print("Image saved as {}".format(filename))
 
 class DatasetFromFolder(data.Dataset):
-    def __init__(self, image_dir, direction):
+    def __init__(self, image_dir_input, image_dir_target, direction, image_size=[512, 512], patch_size=[256, 256]):
         super(DatasetFromFolder, self).__init__()
         self.direction = direction
-        self.a_path = join(image_dir, "a")
-        self.b_path = join(image_dir, "b")
-        self.image_filenames = [x for x in listdir(self.a_path) if is_image_file(x)]
+        self.a_path = image_dir_input
+        self.b_path = image_dir_target
+        self.image_filenames = sorted([x for x in listdir(self.a_path) if is_image_file(x)])
+        self.image_size = image_size
+        self.patch_size = patch_size
 
-        transform_list = [transforms.ToTensor(),
-                          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-
-        self.transform = transforms.Compose(transform_list)
+        self.transform = transforms.Compose([
+                transforms.Resize((image_size[0], image_size[1])),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5,0.5, 0.5])
+        ])
 
     def __getitem__(self, index):
         a = Image.open(join(self.a_path, self.image_filenames[index])).convert('RGB')
         b = Image.open(join(self.b_path, self.image_filenames[index])).convert('RGB')
-        a = a.resize((286, 286), Image.BICUBIC)
-        b = b.resize((286, 286), Image.BICUBIC)
         a = transforms.ToTensor()(a)
         b = transforms.ToTensor()(b)
-        w_offset = random.randint(0, max(0, 286 - 256 - 1))
-        h_offset = random.randint(0, max(0, 286 - 256 - 1))
+        h_offset = random.randint(0, max(0, self.image_size[0] - self.patch_size[0] - 1))
+        w_offset = random.randint(0, max(0, self.image_size[1] - self.patch_size[1] - 1))
 
-        a = a[:, h_offset:h_offset + 256, w_offset:w_offset + 256]
-        b = b[:, h_offset:h_offset + 256, w_offset:w_offset + 256]
+        a = a[:, h_offset:h_offset + self.patch_size[0], w_offset:w_offset + self.patch_size[1]]
+        b = b[:, h_offset:h_offset + self.patch_size[0], w_offset:w_offset + self.patch_size[1]]
 
         a = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(a)
         b = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(b)
@@ -74,13 +75,9 @@ class DatasetFromFolder(data.Dataset):
     def __len__(self):
         return len(self.image_filenames)
 
-def get_training_set(root_dir, direction):
-    train_dir = join(root_dir, "train")
-
-    return DatasetFromFolder(train_dir, direction)
+def get_training_set(train_dataset_input_dir, train_dataset_target_dir, direction, image_size, patch_size):
+    return DatasetFromFolder(train_dataset_input_dir, train_dataset_target_dir, direction, image_size, patch_size)
 
 
-def get_test_set(root_dir, direction):
-    test_dir = join(root_dir, "test")
-
-    return DatasetFromFolder(test_dir, direction)
+def get_test_set(test_dataset_input_dir, test_dataset_target_dir, direction, image_size, patch_size):
+    return DatasetFromFolder(test_dataset_input_dir, test_dataset_target_dir, direction, image_size, patch_size)
