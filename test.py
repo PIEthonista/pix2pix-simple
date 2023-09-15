@@ -47,7 +47,7 @@ image_filenames = sorted([x for x in os.listdir(image_dir) if is_image_file(x)])
 transform = transforms.Compose([
         transforms.Resize((opt.image_size[0], opt.image_size[1])),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5,0.5, 0.5])
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
 
 print("===> Starting Inferencing")

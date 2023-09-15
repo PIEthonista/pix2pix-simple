@@ -13,6 +13,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
+import torchvision
 
 from networks import define_G, define_D, GANLoss, get_scheduler, update_learning_rate
 from data import get_training_set, get_test_set
@@ -173,7 +174,7 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
         writer.add_scalar('Train/loss_d_real', np.mean(loss_d_real.cpu().numpy()), iteration)
         writer.add_scalar('Train/loss_d', np.mean(loss_d.cpu().numpy()), iteration)
         writer.add_scalar('Train/loss_g_gan', np.mean(loss_g_gan.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_g_l1', np.mean(loss_g_l1.cpu().numpy()), iteration)
+        writer.add_scalar('Train/loss_g_L1', np.mean(loss_g_l1.cpu().numpy()), iteration)
         writer.add_scalar('Train/loss_g', np.mean(loss_g.cpu().numpy()), iteration)
     
     writer.add_scalar('Train/LR_g', optimizer_g.param_groups[0]['lr'], epoch)
@@ -184,6 +185,7 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
 
     # test
     psnr_sum = 0
+    last_prediction = None
     print(f"Running Validation round for epoch {epoch}")
     for batch in tqdm(testing_data_loader, total=len(testing_data_loader)):
         input, target = batch[0].to(device), batch[1].to(device)
@@ -192,7 +194,7 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
         mse = criterionMSE(prediction, target)
         psnr = 10 * log10(1 / mse.item())
         psnr_sum += psnr
-
+        last_prediction = prediction.cpu()
 
     avg_psnr = psnr_sum / len(testing_data_loader)
 
@@ -202,6 +204,11 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr))
     writer.add_scalar('Val/psnr', avg_psnr, epoch)
     writer.add_scalar('Val/psnr_highest', highest_psnr, epoch)
+    outputs_grid = torchvision.utils.make_grid([last_prediction[idx] for idx in range(len(last_prediction))])
+    writer.add_image(tag='Val/log_images', 
+                    img_tensor=outputs_grid,
+                    global_step = epoch,
+                    dataformats = 'CHW')
 
 
     #checkpoint
@@ -229,3 +236,4 @@ print("Training Ended with {}/{} epochs complete".format(epoch, opt.niter + opt.
 writer.close()
 if not opt.ignore_wandb:
     wandb.finish()
+print("ALL DONE")
