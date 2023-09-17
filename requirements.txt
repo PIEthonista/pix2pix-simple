@@ -1,0 +1,14 @@
+numpy
+scipy
+seaborn
+Pillow
+pandas
+matplotlib
+opencv-python==4.5.1.48
+torch==1.10.1
+torchaudio==0.10.1
+torchmetrics==0.8.2
+torchvision==0.11.2
+notebook
+jupyter
+wandb
