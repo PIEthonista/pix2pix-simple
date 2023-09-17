@@ -20,20 +20,20 @@ from data import get_training_set, get_test_set
 
 
 # Training settings
+# This script runs validation once every epoch
 parser = argparse.ArgumentParser(description='pix2pix-pytorch-implementation')
 parser.add_argument('--root_dir', type=str, default='', help='root directory of project')
-parser.add_argument('--experiments_dir', type=str, default='experiments', help='experiments path in root dir')
+parser.add_argument('--experiments_dir', type=str, default='experiments', help='experiments path in root directory')
 parser.add_argument('--project_name', type=str, default='', help='project name')
 
-parser.add_argument('--ignore-wandb', action='store_true', help='flag to ignore wandb logging')
-parser.add_argument('--wandb-project', default='palette_scene2scene', type=str, help='wandb project to use')
+parser.add_argument('--ignore_wandb', action='store_true', help='flag to ignore wandb logging')
+parser.add_argument('--wandb_project', default='palette_scene2scene', type=str, help='wandb project to use')
     
 parser.add_argument('--train_dataset_input_dir', type=str, default='', help='directory to train dataset: from')
 parser.add_argument('--train_dataset_target_dir', type=str, default='', help='directory to train dataset: to')
 parser.add_argument('--test_dataset_input_dir', type=str, default='', help='directory to test dataset: from')
 parser.add_argument('--test_dataset_target_dir', type=str, default='', help='directory to test dataset: to')
 
-parser.add_argument('--dataset', type=str, default='facades', help='dataset_name')
 parser.add_argument('--batch_size', type=int, default=32, help='training batch size')
 parser.add_argument('--test_batch_size', type=int, default=1, help='testing batch size')
 parser.add_argument('--direction', type=str, default='a2b', help="a2b or b2a. b2a inverts dataset's input and target")
@@ -45,14 +45,15 @@ parser.add_argument('--output_nc', type=int, default=3, help='output image chann
 parser.add_argument('--ngf', type=int, default=64, help='generator filters in first conv layer')
 parser.add_argument('--ndf', type=int, default=64, help='discriminator filters in first conv layer')
 parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count')
+parser.add_argument('--save_checkpoint_epoch', type=int, default=50, help='save checkpoint every n epoch')
 parser.add_argument('--niter', type=int, default=100, help='# of iter at starting learning rate')
 parser.add_argument('--niter_decay', type=int, default=100, help='# of iter to linearly decay learning rate to zero')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate for adam')
 parser.add_argument('--lr_policy', type=str, default='lambda', help='learning rate policy: lambda|step|plateau|cosine')
 parser.add_argument('--lr_decay_iters', type=int, default=50, help='multiply by a gamma every lr_decay_iters iterations')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
-parser.add_argument('--cuda', type=bool, default = True, help='use cuda?')
-parser.add_argument('--gpu_id', type=int, default=0, gelp='ID odf GPU to use')
+parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
+parser.add_argument('--gpu_id', type=int, default=0, help='ID odf GPU to use')
 parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
 parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
 parser.add_argument('--lamb', type=int, default=100, help='weight on L1 term in objective')
@@ -76,7 +77,7 @@ device = torch.device(f"cuda:{opt.gpu_id}" if opt.cuda else "cpu")
 
 # tensorboard log
 if not opt.ignore_wandb:
-    wandb.init(project=opt.wandb_project, sync_tensorboard=True, name=opt.name)
+    wandb.init(project=opt.wandb_project, sync_tensorboard=True)
 if not os.path.exists(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs')):
     os.makedirs(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs'))
 writer = SummaryWriter(log_dir=os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs'))
@@ -170,12 +171,12 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
         print("===> Epoch[{}]({}/{}): Loss_D: {:.4f} Loss_G: {:.4f}".format(
             epoch, iteration, len(training_data_loader), loss_d.item(), loss_g.item()))
         writer.add_scalar('Train/epoch', epoch, iteration)
-        writer.add_scalar('Train/loss_d_fake', np.mean(loss_d_fake.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_d_real', np.mean(loss_d_real.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_d', np.mean(loss_d.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_g_gan', np.mean(loss_g_gan.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_g_L1', np.mean(loss_g_l1.cpu().numpy()), iteration)
-        writer.add_scalar('Train/loss_g', np.mean(loss_g.cpu().numpy()), iteration)
+        writer.add_scalar('Train/loss_d_fake', np.mean(loss_d_fake.cpu().detach().numpy()), iteration)
+        writer.add_scalar('Train/loss_d_real', np.mean(loss_d_real.cpu().detach().numpy()), iteration)
+        writer.add_scalar('Train/loss_d', np.mean(loss_d.cpu().detach().numpy()), iteration)
+        writer.add_scalar('Train/loss_g_gan', np.mean(loss_g_gan.cpu().detach().numpy()), iteration)
+        writer.add_scalar('Train/loss_g_L1', np.mean(loss_g_l1.cpu().detach().numpy()), iteration)
+        writer.add_scalar('Train/loss_g', np.mean(loss_g.cpu().detach().numpy()), iteration)
     
     writer.add_scalar('Train/LR_g', optimizer_g.param_groups[0]['lr'], epoch)
     writer.add_scalar('Train/LR_d', optimizer_d.param_groups[0]['lr'], epoch)
@@ -212,7 +213,8 @@ for epoch in tqdm(range(opt.epoch_count, opt.niter + opt.niter_decay + 1), total
 
 
     #checkpoint
-    if epoch % 50 == 0:
+    net_g_model_out_path = ''
+    if epoch % opt.save_checkpoint_epoch == 0:
         if not os.path.exists(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'weights')):
             os.makedirs(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'weights'))
         net_g_model_out_path = f"{opt.root_dir}/{opt.experiments_dir}/{opt.project_name}/weights/netG_model_epoch_{epoch}.pth"
