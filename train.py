@@ -77,7 +77,7 @@ device = torch.device(f"cuda:{opt.gpu_id}" if opt.cuda else "cpu")
 
 # tensorboard log
 if not opt.ignore_wandb:
-    wandb.init(project=opt.wandb_project, sync_tensorboard=True)
+    wandb.init(project=opt.wandb_project, sync_tensorboard=True, name=opt.project_name)
 if not os.path.exists(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs')):
     os.makedirs(os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs'))
 writer = SummaryWriter(log_dir=os.path.join(opt.root_dir, opt.experiments_dir, opt.project_name, 'logs'))
