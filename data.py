@@ -44,22 +44,26 @@ class DatasetFromFolder(data.Dataset):
         self.transform = transforms.Compose([
                 transforms.Resize((image_size[0], image_size[1])),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5,0.5, 0.5])
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
         ])
 
     def __getitem__(self, index):
         a = Image.open(join(self.a_path, self.image_filenames[index])).convert('RGB')
         b = Image.open(join(self.b_path, self.image_filenames[index])).convert('RGB')
-        a = transforms.ToTensor()(a)
-        b = transforms.ToTensor()(b)
+        # a = transforms.ToTensor()(a)
+        # b = transforms.ToTensor()(b)
+        
+        a = self.transform(a)
+        b = self.transform(b)
+        
         h_offset = random.randint(0, max(0, self.image_size[0] - self.patch_size[0] - 1))
         w_offset = random.randint(0, max(0, self.image_size[1] - self.patch_size[1] - 1))
 
         a = a[:, h_offset:h_offset + self.patch_size[0], w_offset:w_offset + self.patch_size[1]]
         b = b[:, h_offset:h_offset + self.patch_size[0], w_offset:w_offset + self.patch_size[1]]
 
-        a = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(a)
-        b = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(b)
+        # a = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(a)
+        # b = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(b)
 
         if random.random() < 0.5:
             idx = [i for i in range(a.size(2) - 1, -1, -1)]

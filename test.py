@@ -49,6 +49,19 @@ transform = transforms.Compose([
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
 
+# denorm done with norm code format
+# Norm: Z = (X - m)/s
+# DeNorm: X = (Z * s) + m
+# Rewrite DeNorm in format of Norm:
+# X = ((Z - 0)/(1/s)) + (Z - (-m))/1
+# https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821
+
+invTransform = transforms.Compose([ transforms.Normalize(mean = [ 0., 0., 0. ],
+                                                         std = [ 1/0.5, 1/0.5, 1/0.5 ]),
+                                transforms.Normalize(mean = [ -0.5, -0.5, -0.5 ],
+                                                     std = [ 1., 1., 1. ]),
+                               ])
+
 print("===> Starting Inferencing")
 for image_name in tqdm(image_filenames, total=len(image_filenames)):
     img = load_img(os.path.join(image_dir, image_name))
@@ -56,6 +69,7 @@ for image_name in tqdm(image_filenames, total=len(image_filenames)):
     input = img.unsqueeze(0).to(device)
     out = net_g(input)
     out_img = out.detach().squeeze(0).cpu()
+    out_img = invTransform(out_img)
 
     if not os.path.exists(os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name)):
         os.makedirs(os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name))
