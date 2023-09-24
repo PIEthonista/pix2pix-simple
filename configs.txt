@@ -75,4 +75,4 @@ python train.py
 
 conda activate pix2pix_Alex
 tmux new -s pix2pix_Infrared2Visible_SEVEN_test
-python train.py --root_dir /media/seven/HD_12/code/pix2pix_Alex --project_name pix2pix_Infrared2Visible_SEVEN_test --wandb_project palette_scene2scene --train_dataset_input_dir /media/seven/HD_12/data/LLVIP/infrared/test --train_dataset_target_dir /media/seven/HD_12/data/LLVIP/visible/test --test_dataset_input_dir /media/seven/HD_12/data/LLVIP/infrared/test --test_dataset_target_dir /media/seven/HD_12/data/LLVIP/visible/test --batch_size 2 --test_batch_size 1 --direction a2b --gpu_id 0 
+python train.py --root_dir /media/seven/HD_12/code/pix2pix_Alex --project_name pix2pix_Infrared2Visible_SEVEN_test --wandb_project palette_scene2scene --train_dataset_input_dir /media/seven/HD_12/data/LLVIP/infrared/test --train_dataset_target_dir /media/seven/HD_12/data/LLVIP/visible/test --test_dataset_input_dir /media/seven/HD_12/data/LLVIP/infrared/test --test_dataset_target_dir /media/seven/HD_12/data/LLVIP/visible/test --batch_size 2/media/seven/HD_12/code/pix2pix_Alex/data.py --test_batch_size 1 --direction a2b --gpu_id 0 
