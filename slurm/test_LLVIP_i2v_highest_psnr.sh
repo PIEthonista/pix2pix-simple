@@ -10,4 +10,4 @@
 #SBATCH --mail-user=gohyixian456@gmail.com
 
 # 520550
-python test.py --train_dir /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_Infrared2Visible_2__25_09_2023__003330 --model_weights_path /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_Infrared2Visible_2__25_09_2023__003330/weights/netG_model_highest_psnr_9.376266943982266_epoch_1.pth --test_dataset_input_dir /work/u5832291/datasets/LLVIP/infrared/test --test_dataset_target_dir /work/u5832291/datasets/LLVIP/visible/test
+python test.py --train_dir /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_Infrared2Visible_2__25_09_2023__003330 --model_weights_path /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_Infrared2Visible_2__25_09_2023__003330/weights/netG_model_highest_psnr_9.376266943982266_epoch_1.pth --test_dataset_input_dir /work/u5832291/datasets/LLVIP/infrared/test --test_dataset_target_dir /work/u5832291/datasets/LLVIP/visible/test --inference_instance_folder_name test_LLVIP_i2v_highest_psnr_20231003

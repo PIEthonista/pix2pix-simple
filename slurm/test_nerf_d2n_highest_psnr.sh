@@ -10,4 +10,4 @@
 #SBATCH --mail-user=gohyixian456@gmail.com
 
 # 520550
-python test.py --train_dir /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_nerf_d2n_twcc__26_09_2023__054952 --model_weights_path /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_nerf_d2n_twcc__26_09_2023__054952/weights/netG_model_highest_psnr_16.174357956453502_epoch_55.pth --test_dataset_input_dir /work/u5832291/Palette-Image-to-Image-Diffusion-Models/datasets/nerf/test/day --test_dataset_target_dir /work/u5832291/Palette-Image-to-Image-Diffusion-Models/datasets/nerf/test/night
+python test.py --train_dir /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_nerf_d2n_twcc__26_09_2023__054952 --model_weights_path /work/u5832291/yixian/pix2pix_simple/experiments/pix2pix_nerf_d2n_twcc__26_09_2023__054952/weights/netG_model_highest_psnr_16.174357956453502_epoch_55.pth --test_dataset_input_dir /work/u5832291/Palette-Image-to-Image-Diffusion-Models/datasets/nerf/test/day --test_dataset_target_dir /work/u5832291/Palette-Image-to-Image-Diffusion-Models/datasets/nerf/test/night --inference_instance_folder_name test_nerf_d2n_highest_psnr_20231003
