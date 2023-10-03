@@ -56,22 +56,22 @@ transform = transforms.Compose([
 # X = ((Z - 0)/(1/s)) + (Z - (-m))/1
 # https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821
 
-invTransform = transforms.Compose([ transforms.Normalize(mean = [ 0., 0., 0. ],
-                                                         std = [ 1/0.5, 1/0.5, 1/0.5 ]),
-                                transforms.Normalize(mean = [ -0.5, -0.5, -0.5 ],
-                                                     std = [ 1., 1., 1. ]),
-                               ])
+# invTransform = transforms.Compose([ transforms.Normalize(mean = [ 0., 0., 0. ],
+#                                                          std = [ 1/0.5, 1/0.5, 1/0.5 ]),
+#                                 transforms.Normalize(mean = [ -0.5, -0.5, -0.5 ],
+#                                                      std = [ 1., 1., 1. ]),
+#                                ])
 
 print("===> Starting Inferencing")
 for image_name in tqdm(image_filenames, total=len(image_filenames)):
     img = load_img(os.path.join(image_dir, image_name))
-    img = transform(img)
+    img = transform(img)  # img range [-1, 1]
     input = img.unsqueeze(0).to(device)
     out = net_g(input)
-    out_img = out.detach().squeeze(0).cpu()
-    out_img = invTransform(out_img)
+    out_img = out.detach().squeeze(0).cpu() # out_img range [-1, 1]
+    # out_img = invTransform(out_img)    # save_img will do the denorm
 
     if not os.path.exists(os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name)):
         os.makedirs(os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name))
-    save_img(out_img, os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name, image_name))
+    save_img(out_img, os.path.join(opt.train_dir, opt.outputs_dir, opt.inference_instance_folder_name, image_name)) # img range [-1, 1] -> [0, 1] -> [0, 255]
 print("ALL DONE")
