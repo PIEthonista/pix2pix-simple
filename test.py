@@ -31,6 +31,8 @@ opt, unknown = parser.parse_known_args()
 
 print(opt)
 
+
+
 device = torch.device(f"cuda:{opt.gpu_id}" if opt.cuda else "cpu")
 
 print("===> Loading Model")
